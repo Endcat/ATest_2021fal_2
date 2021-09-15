@@ -13,7 +13,7 @@ stm32f103 experiment for xdu a-test
 
 不知道是我连线错了还是代码错了 
 
-呜呜
+呜呜 来个人教教
 
 ![image](https://user-images.githubusercontent.com/30371828/133403650-346d6de4-fc1a-4520-b294-1f81c019a052.png)
 
