@@ -38,10 +38,15 @@
 #define DS18B20_DQ_ReadPin 	HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_11)
 
 #define DIR_ReadPin					HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_8)
-#define DIR_H								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET)
-#define DIR_L								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET)
-#define PWM_H								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_SET)
-#define PWM_L								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_RESET)
+//这里与实验指南有出入，GPIOB应该改为GPIOA
+//#define DIR_H								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET)
+//#define DIR_L								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET)
+//#define PWM_H								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_SET)
+//#define PWM_L								HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_RESET)
+#define DIR_H								HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0,GPIO_PIN_SET)
+#define DIR_L								HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0,GPIO_PIN_RESET)
+#define PWM_H								HAL_GPIO_WritePin(GPIOA,GPIO_PIN_10,GPIO_PIN_SET)
+#define PWM_L								HAL_GPIO_WritePin(GPIOA,GPIO_PIN_10,GPIO_PIN_RESET)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -120,10 +125,11 @@ void LCD1602Init(void)
 	HAL_Delay(100);
 	
 	LcdWriteCom(0x80);
-	// here length(table1) == 5, idk why index < 13, so i modified
-	// maybe the former string in table1 is "temperature= " (<13)
+	// 这里指南里面写的是index < 13，要改成index < 5，不然会越界读字符串。
 	for (index = 0; index < 5; index++)
 		LcdWriteDate(table1[index]);
+	
+	// write successfully
 }
 
 void LCD1602WriteCommand(uint8_t comm)
@@ -211,7 +217,8 @@ void DS18B20_Reset(void)
 	DS18B20_DQ_DDR(0);
 	DS18B20_DQ_H;
 	Delay_us(40);
-	Delay_us(33);
+	//Delay_us(33);
+	Delay_us(35);
 	DS18B20_DQ_ReadPin;
 	Delay_us(500);
 }
@@ -225,8 +232,6 @@ short DS18B20_Get_Temp(void)
 	DS18B20_Reset();
 	DS18B20_Wbyte(0xcc);
 	DS18B20_Wbyte(0x44);
-	// modified
-	//TL = DS18B20_Rbyte();
 	DS18B20_Reset();
 	DS18B20_Wbyte(0xcc);
 	DS18B20_Wbyte(0xbe);
@@ -245,7 +250,7 @@ short DS18B20_Get_Temp(void)
 	data = TH;
 	data <<= 8;
 	data += TL;
-	data = (float)data * 0.0625;
+	data = (float)data * 0.0625; // multiplier maybe wrong according to open repos
 	if(fg)
 		return data;
 	else
@@ -289,8 +294,10 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-	LCD1602Init(); // print "temp=" successfully
+		
+	LCD1602Init();
 	DS18B20_Get_Temp();
+	
 	printf("Testing OK\r");
 	HAL_Delay(800);
   /* USER CODE END 2 */
@@ -312,16 +319,22 @@ int main(void)
 			LcdWriteDate(buff[i]);
 		
 		LcdWriteCom(0xc0);
-		if (temp > 31) // set my student number
+	  	// 在这里根据自己的学号修改温度范围，根据我的学号这里就写31，详细要求看指南
+		if (temp > 31) 
 		{
 			// opened
 			for (index = 0; index < 15; index++)
 				LcdWriteDate(table2[index]);
-			
+			// 在这里的PWM操作可以控制电机运转，可以尝试一下有什么效果。
 			PWM_H;
 			HAL_Delay(70);
 			PWM_L;
 			HAL_Delay(30);
+			
+			//PWM_L;
+			//HAL_Delay(30);
+			//PWM_H;
+			//HAL_Delay(70);
 		}
 		else
 		{
@@ -329,8 +342,13 @@ int main(void)
 			for (index = 0; index < 15; index++)
 				LcdWriteDate(table3[index]);
 			
-			PWM_H;
-			HAL_Delay(100);
+			//PWM_H;
+			//PWM_L;
+			//HAL_Delay(100);
+			//PWM_H;
+			//HAL_Delay(30);
+			//PWM_L;
+			//HAL_Delay(30);
 		}
   }
   /* USER CODE END 3 */
