@@ -6,6 +6,8 @@ stm32f103 experiment for xdu a-test
 
 ~~（原来是pdf里代码的锅，屮）~~
 
+实验代码见仓库main.c，连线图如下：
+
 ![image](https://user-images.githubusercontent.com/30371828/133403650-346d6de4-fc1a-4520-b294-1f81c019a052.png)
 
 ## how to do
